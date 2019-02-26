@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -9,28 +10,30 @@ import java.util.List;
  * <p>
  * You may add fields and methods to this class as you see fit (including public methods).
  */
-public class Customer {
+public class Customer implements Serializable {
 
-	//Fields
+	//----------------------------------------------------------Fields----------------------------------------//
 	private String name;
 	private int id;
 	private String address;
 	private int distance;
 	private int creditNumber;
 	private int creditAmount;
-	private List<OrderReceipt> customerRecepitList;
+	private LinkedList<OrderReceipt> customerRecepitList;
 
-	//Constructor
-	public Customer(String name, int id, String address, int distance, int creditNumber, int creditAmount, List<OrderReceipt> customerRecepitList){
+	//----------------------------------------------------------Constructor----------------------------------------//
+	public Customer(String name, int id, String address, int distance, int creditNumber, int creditAmount){
 		this.name=name;
 		this.id=id;
 		this.address=address;
 		this.distance=distance;
 		this.creditNumber=creditNumber;
 		this.creditAmount=creditAmount;
-		this.customerRecepitList= new ArrayList<>();
+		this.customerRecepitList=new LinkedList<>();
 	}
 
+
+	//----------------------------------------------------------Methods----------------------------------------//
 	/**
      * Retrieves the name of the customer.
      */
@@ -85,19 +88,16 @@ public class Customer {
 		return creditNumber;
 	}
 
-	//Add methods
-	/**
-	 * increase the amount in the credit
-	 */
-	public void increaseCreditAmount(int amount) {
-		this.creditAmount=this.creditNumber+amount;
+
+	//Sets the Amount of the customer on th credit
+	public void setCreditAmount(int amount){
+		creditAmount=creditAmount-amount;
 	}
 
-	/**
-	 * decrease the amount in the credit
-	 */
-	public void decreaseCreditAmount(int amount) {
-		this.creditAmount=this.creditNumber-amount;
+
+	//adds receipt to his list
+	public void addRecepit(OrderReceipt r){
+		this.customerRecepitList.add(r);
 	}
 
 	

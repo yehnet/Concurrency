@@ -8,16 +8,20 @@ package bgu.spl.mics.application.passiveObjects;
  */
 public class DeliveryVehicle {
 
-	//Fields
+	//----------------------------------------------------------Fields----------------------------------------//
 	private int license;
 	private int speed;
 	/**
      * Constructor.   
      */
-	 public DeliveryVehicle(int license, int speed) {
+	//----------------------------------------------------------Constructor----------------------------------------//
+	public DeliveryVehicle(int license, int speed) {
 		this.license=license;
 		this.speed=speed;
 	  }
+
+
+	//----------------------------------------------------------Methods----------------------------------------//
 	/**
      * Retrieves the license of this delivery vehicle.   
      */
@@ -42,6 +46,9 @@ public class DeliveryVehicle {
      * @param distance	The distance from the store to the customer.
      */
 	public void deliver(String address, int distance) {
-		// TODO Implement this
+		try{
+			Thread.sleep(distance*speed);
+		}catch (InterruptedException e){}
 	}
+
 }

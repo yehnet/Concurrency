@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.AvialabiltyCheckEvent;
+import bgu.spl.mics.application.messages.TakeBookEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.passiveObjects.Inventory;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * InventoryService is in charge of the book inventory and stock.
@@ -14,15 +20,36 @@ import bgu.spl.mics.MicroService;
 
 public class InventoryService extends MicroService{
 
-	public InventoryService() {
-		super("Change_This_Name");
-		// TODO Implement this
+	//----------------------------------------------------------Fields----------------------------------------//
+	private Inventory inventory;
+	private CountDownLatch latch;
+	private CountDownLatch terminateCountDown;
+
+
+	//----------------------------------------------------------Constructor----------------------------------------//
+	public InventoryService(CountDownLatch latch,CountDownLatch terminateCountDown) {
+		super("InventoryService");
+		this.inventory=Inventory.getInstance();
+		this.latch=latch;
+		this.terminateCountDown=terminateCountDown;
 	}
 
+	//----------------------------------------------------------Methods----------------------------------------//
 	@Override
 	protected void initialize() {
-		// TODO Implement this
-		
+		subscribeBroadcast(TickBroadcast.class, ev->{
+			if(ev.getIsDone()){
+				terminate();
+				terminateCountDown.countDown();
+			}
+		});
+		subscribeEvent(AvialabiltyCheckEvent.class, ev-> {
+			complete(ev, inventory.checkAvailabiltyAndGetPrice(ev.getBook()));
+		});
+		subscribeEvent(TakeBookEvent.class, ev->{
+			complete(ev,inventory.take(ev.getBookTitle()));
+		});
+		latch.countDown();
 	}
 
 }

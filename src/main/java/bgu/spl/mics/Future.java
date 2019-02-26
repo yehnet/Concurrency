@@ -11,14 +11,25 @@ import java.util.concurrent.TimeUnit;
  * No public constructor is allowed except for the empty constructor.
  */
 public class Future<T> {
-	
+
+	//----------------------------------------------------------Fields----------------------------------------//
+	private T result;
+	private boolean isSolved;
+	private Object lock;
+
 	/**
 	 * This should be the the only public constructor in this class.
 	 */
+	//----------------------------------------------------------Constructor----------------------------------------//
 	public Future() {
-		//TODO: implement this
+		isSolved=false;
+		lock=new Object();
+		result=null;
 	}
-	
+
+
+	//----------------------------------------------------------Methods----------------------------------------//
+
 	/**
      * retrieves the result the Future object holds if it has been resolved.
      * This is a blocking method! It waits for the computation in case it has
@@ -27,24 +38,39 @@ public class Future<T> {
      * @return return the result of type T if it is available, if not wait until it is available.
      * 	       
      */
-	public T get() {
-		//TODO: implement this.
-		return null;
+	//we put here synchronized to make sure that the event waits until he has result
+	public  T get() {
+		synchronized (lock) {
+			while (!isSolved) {
+				try {
+					lock.wait();
+				} catch (InterruptedException e) {
+					resolve(null);
+				}
+			}
+		}
+		return result;
 	}
 	
 	/**
      * Resolves the result of this Future object.
      */
-	public void resolve (T result) {
-		//TODO: implement this.
+	//we put here synchronized to make sure that different results enter at the same time
+	public  void  resolve (T result) {
+		synchronized (lock){
+			if (!isSolved){
+				this.result=result;
+				isSolved=true;
+				lock.notifyAll();
+			}
+		}
 	}
 	
 	/**
      * @return true if this object has been resolved, false otherwise
      */
 	public boolean isDone() {
-		//TODO: implement this.
-		return false;
+		return isSolved;
 	}
 	
 	/**
@@ -52,15 +78,23 @@ public class Future<T> {
      * This method is non-blocking, it has a limited amount of time determined
      * by {@code timeout}
      * <p>
-     * @param timout 	the maximal amount of time units to wait for the result.
+     * @param timeout 	the maximal amount of time units to wait for the result.
      * @param unit		the {@link TimeUnit} time units to wait.
      * @return return the result of type T if it is available, if not, 
      * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {
-		//TODO: implement this.
-		return null;
+		synchronized (lock){
+			while(!isSolved){
+				try{
+					if(timeout>=0)
+						lock.wait(unit.toMillis(timeout));
+					if(!isSolved)
+						resolve(null);
+				}catch (InterruptedException e){}
+			}
+		}
+		return result;
 	}
-
 }

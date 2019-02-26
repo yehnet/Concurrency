@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Passive object representing the store finance management. 
@@ -11,14 +17,28 @@ package bgu.spl.mics.application.passiveObjects;
  * <p>
  * You can add ONLY private fields and methods to this class as you see fit.
  */
-public class MoneyRegister {
+public class MoneyRegister implements Serializable {
+
+
+	//----------------------------------------------------------Fields----------------------------------------//
+	private static MoneyRegister moneyRegister=null;
+	private ConcurrentLinkedQueue<OrderReceipt> orderReceipts;
+	private int totalEarning=0;
+
+
+	//----------------------------------------------------------Constructor----------------------------------------//
+	private MoneyRegister(){
+		this.orderReceipts=new ConcurrentLinkedQueue<>();
+	}
 	
 	/**
      * Retrieves the single instance of this class.
      */
 	public static MoneyRegister getInstance() {
-		//TODO: Implement this
-		return null;
+		if(moneyRegister==null){
+			moneyRegister=new MoneyRegister();
+		}
+		return moneyRegister;
 	}
 	
 	/**
@@ -27,15 +47,15 @@ public class MoneyRegister {
      * @param r		The receipt to save in the money register.
      */
 	public void file (OrderReceipt r) {
-		//TODO: Implement this.
+		orderReceipts.add(r);
+		totalEarning=totalEarning+r.getPrice();
 	}
 	
 	/**
      * Retrieves the current total earnings of the store.  
      */
 	public int getTotalEarnings() {
-		//TODO: Implement this
-		return 0;
+		return totalEarning;
 	}
 	
 	/**
@@ -43,8 +63,11 @@ public class MoneyRegister {
      * <p>
      * @param amount 	amount to charge
      */
-	public void chargeCreditCard(Customer c, int amount) {
-		// TODO Implement this
+	//Made here synchronized in order to make sure that customer not try to charge him self when he dont have money
+	public synchronized void chargeCreditCard(Customer c, int amount) {
+		if(c.getAvailableCreditAmount()>=amount){
+			c.setCreditAmount(amount);
+		}
 	}
 	
 	/**
@@ -53,6 +76,19 @@ public class MoneyRegister {
      * This method is called by the main method in order to generate the output.. 
      */
 	public void printOrderReceipts(String filename) {
-		//TODO: Implement this
+		LinkedList<OrderReceipt> tmp=new LinkedList<>();
+		for(OrderReceipt d: orderReceipts){
+			tmp.add(d);
+		}
+		try{
+			FileOutputStream fos= new FileOutputStream(filename);
+			ObjectOutputStream oos= new ObjectOutputStream(fos);
+			oos.writeObject(tmp);
+			oos.close();
+			fos.close();
+		}
+		catch (IOException e){
+			System.out.println("Cant Create File: Money Register");
+		}
 	}
 }
